@@ -17,7 +17,7 @@ public class RestTest {
 	// HashMap to store details from API
 	private static Map<String, State> stateMap = new HashMap<String, State>();
 
-	public static void main(String args[]){
+	public static void main(String args[]) {
 		// Get state data
 		boolean fetched = getStateData();
 
@@ -28,35 +28,37 @@ public class RestTest {
 		}
 
 		// State data populated, lets take user inputs now.
-		try{
-		while (true) {
-			BufferedReader bufferReader = new BufferedReader(new InputStreamReader(System.in));
-			System.out.println("Enter State Name / Abbreviation : (Type quit to Exit)");
-			String input = bufferReader.readLine().trim();
-			if (!input.equalsIgnoreCase("quit")) {
-				// Search the Map for statename as key
-				if (stateMap.containsKey(input)) {
-					State enteredState = stateMap.get(input);
-					System.out.println("The Largest city of " + input + " is " + enteredState.getLargestCity());
-					System.out.println("The Capital of " + input + " is " + enteredState.getCapital());
-
+		try {
+			while (true) {
+				BufferedReader bufferReader = new BufferedReader(new InputStreamReader(System.in));
+				System.out.println("Enter State Name / Abbreviation : (Type quit to Exit)");
+				String input = bufferReader.readLine().trim();
+				if (input == null || input.isEmpty()) {
+					System.out.println("Please enter a valid input.");
+				} else if (input.equalsIgnoreCase("quit")) {
+					System.out.println("Exiting the program. See you later!");
+					return;
 				} else {
-					System.out.println("Please enter a valid state name or abbreviation!!");
+					// Search the Map for statename as key
+					if (stateMap.containsKey(input.toLowerCase())) {
+						State enteredState = stateMap.get(input.toLowerCase());
+						System.out.println("The Largest city of " + input + " is " + enteredState.getLargestCity());
+						System.out.println("The Capital of " + input + " is " + enteredState.getCapital());
+
+					} else {
+						System.out.println("Please enter a valid state name or abbreviation!!");
+					}
 				}
-			} else {
-				System.out.println("Exiting the program. See you later!");
-				return;
 			}
+		} catch (IOException ioe) {
+			System.out.println("Error while getting user input." + ioe.getMessage());
 		}
-		}catch(IOException ioe){
-			System.out.println("Error while getting user input."+ ioe.getMessage());
-		}
-		
+
 	}
 
 	public static boolean getStateData() {
 		System.out.println("Fetching state data.");
-		try{
+		try {
 			RestAssured.baseURI = Constants.API_BASE_URI;
 			RequestSpecification httpRequest = RestAssured.given();
 			Response resp = httpRequest.contentType(ContentType.JSON).get(Constants.API_PATH);
@@ -65,14 +67,11 @@ public class RestTest {
 				String response = resp.getBody().asString();
 				JsonPath js = new JsonPath(response);
 				return parseAndPopulate(js);
-			}
-			else{
+			} else {
 				System.out.println("Unable to fetch state data.!!");
 				return false;
 			}
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 			System.out.println("Make sure URI is correct");
 			return false;
 		}
@@ -105,9 +104,9 @@ public class RestTest {
 			State state = new State(abbr, name, largestCity, capital);
 
 			// put entry corresponding to the complete name.
-			stateMap.put(name, state);
+			stateMap.put(name.toLowerCase(), state);
 			// put entry corresponding to the abbrev.
-			stateMap.put(abbr, state);
+			stateMap.put(abbr.toLowerCase(), state);
 
 		}
 		return true;
